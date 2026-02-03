@@ -1,0 +1,28 @@
+[00:00:51.837] Server  LOG     ✓ Ready in 37.7s
+[00:00:54.937] Server  LOG     ○ Compiling /dashboard ...
+[00:01:35.321] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:35.882] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:50.408] Server  LOG     ✓ Finished filesystem cache database compaction in 60s
+[00:01:51.599] Server  LOG     ✓ Finished writing to filesystem cache in 18.3s
+[00:02:37.461] Server  LOG     ○ Compiling /dashboard/analytics ...
+[00:03:25.968] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:55.440] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:04:27.477] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:04:27.477] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:04:27.477] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:04:27.477] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:20:53.576] Server  LOG     ✓ Compiled in 565ms
+[00:21:14.023] Server  LOG     ✓ Compiled in 719ms
+[00:21:24.107] Server  LOG     ✓ Compiled in 1068ms
