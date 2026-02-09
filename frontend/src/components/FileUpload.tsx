@@ -2,10 +2,10 @@ import { useState, useRef } from 'react';
 import { Button } from './ui/button';
 import { UploadCloud, FileText, CheckCircle, AlertCircle, X, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import axios from 'axios';
+import { api } from '@/lib/api';
 
 interface FileUploadProps {
-    onUploadStart: (jobId: string, count: number) => void;
+    onUploadStart: (jobId: string, count: number, duplicatesRemoved?: number) => void;
     onError: (msg: string) => void;
 }
 
@@ -76,10 +76,10 @@ export function FileUpload({ onUploadStart, onError }: FileUploadProps) {
         });
 
         try {
-            const res = await axios.post('http://127.0.0.1:3001/api/upload', formData, {
+            const res = await api.post('/api/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            onUploadStart(res.data.jobId, res.data.totalEmails);
+            onUploadStart(res.data.jobId, res.data.totalEmails, res.data.duplicatesRemoved);
             setFiles([]);
         } catch (err: any) {
             console.error(err);

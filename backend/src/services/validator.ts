@@ -1,12 +1,7 @@
-import * as emailValidator from 'email-validator';
 import * as dns from 'dns';
 import * as net from 'net';
 import { promisify } from 'util';
-
-const resolveMx = promisify(dns.resolveMx);
-
-// List of disposable domains (normally would be loaded from a file or DB)
-const disposableDomains = new Set(['tempmail.com', 'throwawaymail.com', 'mailinator.com', 'guerrillamail.com', 'yopmail.com']);
+import { FREE_PROVIDERS, HIGH_RISK_TLDS, TYPO_DOMAINS } from '../config/constants';
 
 export interface ValidationResult {
     email: string;
@@ -15,6 +10,8 @@ export interface ValidationResult {
     score: number;
     reason?: string;
     suggestion?: string;
+    first_name?: string;
+    company_name?: string;
     details: {
         syntax: boolean;
         mx: boolean;
@@ -27,21 +24,17 @@ export interface ValidationResult {
     };
 }
 
-const TYPO_DOMAINS: Record<string, string> = {
-    'gmial.com': 'gmail.com',
-    'gmal.com': 'gmail.com',
-    'gamil.com': 'gmail.com',
-    'yaho.com': 'yahoo.com',
-    'yhoo.com': 'yahoo.com',
-    'hotmial.com': 'hotmail.com',
-    'outlok.com': 'outlook.com',
-    'msn.com': 'msn.com',
-    'icloud.com': 'icloud.com'
-};
+const resolveMx = promisify(dns.resolveMx);
 
-const HIGH_RISK_TLDS = new Set(['.xyz', '.top', '.win', '.icu', '.party', '.bid', '.date']);
+// List of disposable domains (normally would be loaded from a file or DB)
+const disposableDomains = new Set(['tempmail.com', 'throwawaymail.com', 'mailinator.com', 'guerrillamail.com', 'yopmail.com']);
 
 export class EmailValidatorService {
+
+    static isFreeProvider(email: string): boolean {
+        const domain = email.split('@')[1]?.toLowerCase();
+        return domain ? FREE_PROVIDERS.has(domain) : false;
+    }
 
     static async validate(email: string): Promise<ValidationResult> {
         const result: ValidationResult = {
@@ -122,7 +115,7 @@ export class EmailValidatorService {
             result.score += 25;
 
             // Sort MX records by priority
-            const sortedMx = mxRecords.sort((a, b) => a.priority - b.priority);
+            const sortedMx = mxRecords.sort((a: any, b: any) => a.priority - b.priority);
             const exchange = sortedMx[0].exchange;
 
             // 6. SMTP Connection Check (Real Mailbox)
@@ -182,9 +175,9 @@ export class EmailValidatorService {
             let success = false;
             let lastCode = 0;
 
-            socket.setTimeout(4000); // 4s timeout
+            socket.setTimeout(3000); // 3s timeout (Optimized for speed)
 
-            socket.on('data', (data) => {
+            socket.on('data', (data: Buffer) => {
                 const response = data.toString();
                 const code = parseInt(response.substring(0, 3));
                 lastCode = code;
@@ -217,7 +210,7 @@ export class EmailValidatorService {
                 }
             });
 
-            socket.on('error', (err) => {
+            socket.on('error', (err: Error) => {
                 socket.destroy();
                 resolve({ success: false, message: err.message });
             });

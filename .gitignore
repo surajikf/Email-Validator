@@ -1,15 +1,27 @@
 # Dependencies
 node_modules/
+.pnpm-store
 
 # Environment variables
 .env
+.env*.local
 
 # Build outputs
 dist/
 build/
+.next/
+out/
 
-# Uploads
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Uploads and Local Storage
 uploads/
+storage/
 
 # OS specific
 .DS_Store
@@ -18,3 +30,14 @@ Thumbs.db
 # IDEs
 .vscode/
 .idea/
+
+# TypeScript
+*.tsbuildinfo
+
+# Deployment
+.vercel
+
+# Specific files
+n8n_logic.json
+frontend/next-env.d.ts
+backend/supabase_schema_update.sql

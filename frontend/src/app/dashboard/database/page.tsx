@@ -58,7 +58,7 @@ export default function DatabasePage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const res = await axios.get('http://127.0.0.1:3001/api/database', {
+            const res = await axios.get('http://localhost:3001/api/dashboard/database', {
                 params: {
                     page: currentPage,
                     limit: PAGE_SIZE,
@@ -79,7 +79,7 @@ export default function DatabasePage() {
         if (!confirm('This will queue all current invalid emails for re-validation. Proceed?')) return;
         setLoading(true);
         try {
-            const res = await axios.post('http://127.0.0.1:3001/api/revalidate-invalid');
+            const res = await axios.post('http://localhost:3001/api/revalidate-invalid');
             alert(res.data.message || 'Re-validation started');
             fetchData();
         } catch (err) {

@@ -1,9 +1,8 @@
 import express from 'express';
 import cors from 'cors';
-import { router as apiRoutes } from './routes/api'; // Renamed 'router' to 'apiRoutes' for consistency with the instruction
 import dotenv from 'dotenv';
 import { createServer } from 'http';
-import { rateLimit } from 'express-rate-limit'; // Added import for rateLimit
+import { rateLimit } from 'express-rate-limit';
 import { SchedulerService } from './services/scheduler';
 
 dotenv.config();
@@ -42,7 +41,17 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-app.use('/api', apiRoutes);
+import { router as uploadRoutes } from './routes/upload';
+import { router as campaignRoutes } from './routes/campaign';
+import { router as dashboardRoutes } from './routes/dashboard';
+import { router as schedulerRoutes } from './routes/scheduler';
+
+// ...
+
+app.use('/api', uploadRoutes); // Mounts /upload, /paste
+app.use('/api', campaignRoutes); // Mounts /send-test, /trigger, /revalidate-invalid
+app.use('/api/scheduler', schedulerRoutes); // Mounts /settings
+app.use('/api/dashboard', dashboardRoutes); // Mounts /summary, /daily, /database, /status/:id
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok' });

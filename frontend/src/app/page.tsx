@@ -34,7 +34,7 @@ export default function Home() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4">
-          <Link href="/dashboard">
+          <Link href="/validate">
             <Button size="lg" className="h-14 px-8 text-lg shadow-xl shadow-indigo-200 hover:shadow-indigo-300 transition-all">
               Start Validating Now <ArrowRight className="ml-2 w-5 h-5" />
             </Button>

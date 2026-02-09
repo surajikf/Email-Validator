@@ -1,49 +1,90 @@
 import cron from 'node-cron';
+import { SendingQueue } from '../queue/sendingQueue';
 import { supabase } from '../lib/supabase';
-import { emailQueue } from '../queue/emailQueue';
+
+interface SchedulerSettings {
+    frequency: 'daily' | 'hourly' | 'weekly';
+    time: string; // HH:MM
+    batch_size: number;
+    is_active: boolean;
+    day_of_week: number; // 0-6
+}
 
 export class SchedulerService {
-    static init() {
-        console.log('📅 [Scheduler] Initializing automation...');
+    private static currentTask: any | null = null;
+    private static settings: SchedulerSettings | null = null;
 
-        // Daily Check - at 00:00 every day
-        cron.schedule('0 0 * * *', async () => {
-            console.log('🕒 [Scheduler] Running Daily Re-validation check...');
-            await this.revalidateInvalid();
-        });
-
-        // Weekly Check - at 00:00 on Sunday
-        cron.schedule('0 0 * * 0', async () => {
-            console.log('🕒 [Scheduler] Running Weekly Re-validation check...');
-            // In a real app, you might distinguish daily vs weekly
-            // For now, they both trigger the same re-validation logic
-            await this.revalidateInvalid();
-        });
+    static async init() {
+        console.log('[Scheduler] Initializing...');
+        await this.restart();
     }
 
-    private static async revalidateInvalid() {
-        try {
-            const { data, error } = await supabase
-                .from('validated_emails')
-                .select('email')
-                .eq('status', 'invalid');
+    static async restart() {
+        // Stop existing task
+        if (this.currentTask) {
+            console.log('[Scheduler] Stopping previous task...');
+            this.currentTask.stop();
+            this.currentTask = null;
+        }
 
-            if (error) throw error;
+        if (!supabase) {
+            console.warn('[Scheduler] Database not connected. Scheduler disabled.');
+            return;
+        }
 
-            if (data && data.length > 0) {
-                const emails = data.map(r => r.email);
-                console.log(`🚀 [Scheduler] Queueing ${emails.length} emails for re-validation.`);
+        // Fetch settings
+        const { data, error } = await supabase
+            .from('scheduler_settings')
+            .select('*')
+            .single();
 
-                await emailQueue.add('auto-revalidate-job', {
-                    emails,
-                    jobId: `auto-revalidate-${Date.now()}`,
-                    isRevalidation: true
-                });
-            } else {
-                console.log('ℹ️ [Scheduler] No invalid emails to re-validate.');
-            }
-        } catch (err: any) {
-            console.error('❌ [Scheduler] Error during auto re-validation:', err.message);
+        if (error || !data) {
+            console.error('[Scheduler] Failed to load settings. Using defaults (Inactive).');
+            return;
+        }
+
+        this.settings = data as SchedulerSettings;
+
+        if (!this.settings.is_active) {
+            console.log('[Scheduler] Scheduler is currently DISABLED in settings.');
+            return;
+        }
+
+        this.scheduleJob();
+    }
+
+    private static scheduleJob() {
+        if (!this.settings) return;
+
+        const { frequency, time, day_of_week } = this.settings;
+        let cronExpression = '';
+
+        // Parse Time (HH:MM)
+        const [hour, minute] = time.split(':').map(Number); // IST Time from DB
+
+        // Note: node-cron uses server time. Assuming server is UTC or local.
+        // If server is UTC and user inputs IST, we might need conversion.
+        // For now, assuming user inputs server-relative time or server is IST.
+        // Let's assume input is "Local Time" of the user/server.
+
+        if (frequency === 'hourly') {
+            // Run at minute 0 of every hour
+            cronExpression = '0 * * * *';
+            console.log(`[Scheduler] Scheduled HOURLY at minute 0.`);
+        } else if (frequency === 'daily') {
+            cronExpression = `${minute} ${hour} * * *`;
+            console.log(`[Scheduler] Scheduled DAILY at ${time}.`);
+        } else if (frequency === 'weekly') {
+            cronExpression = `${minute} ${hour} * * ${day_of_week}`;
+            console.log(`[Scheduler] Scheduled WEEKLY on day ${day_of_week} at ${time}.`);
+        }
+
+        if (cronExpression) {
+            this.currentTask = cron.schedule(cronExpression, async () => {
+                console.log(`[Scheduler] Triggering Campaign (${frequency})...`);
+                // Pass dynamic batch size
+                await SendingQueue.processDailyCampaign(this.settings!.batch_size);
+            });
         }
     }
 }

@@ -10,4 +10,6 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
     console.warn('⚠️ Supabase credentials missing. DB persistence will be disabled.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+export const supabase = supabaseUrl && supabaseServiceRoleKey 
+    ? createClient(supabaseUrl, supabaseServiceRoleKey) 
+    : null;
