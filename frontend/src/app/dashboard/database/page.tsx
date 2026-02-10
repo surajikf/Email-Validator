@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton, TableRowSkeleton } from '@/components/ui/skeleton';
 
 interface DBRecord {
-    id: string;
+    // Removed as DB uses email as PK
     email: string;
     status: 'valid' | 'invalid' | 'risky' | 'unknown';
     score: number;
@@ -199,7 +199,7 @@ export default function DatabasePage() {
                                 </tr>
                             ) : (
                                 records.map((r) => (
-                                    <tr key={r.id} className="hover:bg-slate-50/50 transition-colors group text-sm">
+                                    <tr key={r.email} className="hover:bg-slate-50/50 transition-colors group text-sm">
                                         <td className="px-6 py-4 font-medium text-slate-900">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-xs uppercase">

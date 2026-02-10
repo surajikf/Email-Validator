@@ -28,7 +28,7 @@ export class SendingQueue {
                 .select('*')
                 .eq('status', 'valid')
                 .is('sent_at', null)
-                .limit(this.BATCH_SIZE);
+                .limit(batchSize);
 
             if (error) throw error;
 
