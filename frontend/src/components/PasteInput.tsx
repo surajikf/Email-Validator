@@ -18,7 +18,7 @@ export function PasteInput({ onUploadStart, onError }: PasteInputProps) {
         if (!text.trim()) return;
         setLoading(true);
         try {
-            const res = await axios.post('http://127.0.0.1:3001/api/paste', { emails: text });
+            const res = await axios.post('/api/paste', { emails: text });
             onUploadStart(res.data.jobId, res.data.totalEmails);
             setText('');
         } catch (err: any) {

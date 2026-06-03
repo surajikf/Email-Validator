@@ -47,7 +47,7 @@ export function ValidationProvider({ children }: { children: ReactNode }) {
         if (jobId && status !== 'completed' && status !== 'failed') {
             interval = setInterval(async () => {
                 try {
-                    const res = await axios.get(`http://127.0.0.1:3001/api/status/${jobId}`);
+                    const res = await axios.get(`/api/status/${jobId}`);
                     const data = res.data;
                     const newStatus = data.state;
 

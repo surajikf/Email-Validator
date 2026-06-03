@@ -71,7 +71,7 @@ class QueueWrapper {
 
             // Real connection
             const connection = new Redis({ host: REDIS_HOST, port: REDIS_PORT, maxRetriesPerRequest: null });
-            this.queue = new Queue('email-validation', { connection });
+            this.queue = new Queue('email-validation', { connection: connection as any });
             this.initWorker(connection);
 
         } catch (e) {
@@ -190,7 +190,7 @@ class QueueWrapper {
         };
 
         if (this.isRedis) {
-            const worker = new Worker('email-validation', processor, { connection, concurrency: 5 });
+            const worker = new Worker('email-validation', processor, { connection: connection as any, concurrency: 5 });
             worker.on('completed', (job) => console.log(`Job ${job.id} completed!`));
             worker.on('failed', (job, err) => console.log(`Job ${job?.id} failed: ${err.message}`));
         } else {

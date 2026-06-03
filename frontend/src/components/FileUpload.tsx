@@ -76,7 +76,7 @@ export function FileUpload({ onUploadStart, onError }: FileUploadProps) {
         });
 
         try {
-            const res = await axios.post('http://127.0.0.1:3001/api/upload', formData, {
+            const res = await axios.post('/api/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             onUploadStart(res.data.jobId, res.data.totalEmails);

@@ -32,7 +32,7 @@ export default function AnalyticsPage() {
     const fetchAnalytics = async () => {
         setLoading(true);
         try {
-            const res = await axios.get('http://127.0.0.1:3001/api/analytics');
+            const res = await axios.get('/api/analytics');
             setData(res.data);
         } catch (err) {
             console.error(err);

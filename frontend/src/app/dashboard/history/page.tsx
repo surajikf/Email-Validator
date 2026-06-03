@@ -15,7 +15,7 @@ export default function HistoryPage() {
 
     const fetchHistory = async () => {
         try {
-            const res = await axios.get('http://127.0.0.1:3001/api/history');
+            const res = await axios.get('/api/history');
             setJobs(res.data);
         } catch (err) {
             console.error(err);
