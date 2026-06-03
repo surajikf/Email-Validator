@@ -7,6 +7,11 @@ node_modules/
 # Build outputs
 dist/
 build/
+.next/
+
+# Caches
+.npm-cache/
+node_modules_broken_install/
 
 # Uploads
 uploads/

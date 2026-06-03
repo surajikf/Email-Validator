@@ -27,7 +27,7 @@ interface ValidationContextType {
     setActiveInputTab: (tab: 'upload' | 'paste') => void;
     handleStart: (id: string, total: number) => void;
     handleReset: () => void;
-    downloadReport: (type: 'valid' | 'invalid' | 'full') => void;
+    downloadReport: (type: 'valid' | 'invalid' | 'full' | 'verified_domain') => void;
 }
 
 const ValidationContext = createContext<ValidationContextType | undefined>(undefined);
@@ -104,15 +104,83 @@ export function ValidationProvider({ children }: { children: ReactNode }) {
         setDuplicatesRemoved(0);
     };
 
-    const downloadReport = (type: 'valid' | 'invalid' | 'full') => {
+    const escapeCsv = (value: unknown) => {
+        const str = String(value ?? '');
+        return `"${str.replace(/"/g, '""')}"`;
+    };
+
+    const downloadReport = (type: 'valid' | 'invalid' | 'full' | 'verified_domain') => {
         if (!results.length) return;
+
+        if (type === 'verified_domain') {
+            const validEmails = results.filter(r => r.status === 'valid');
+            const byDomain = new Map<string, Set<string>>();
+
+            validEmails.forEach((r: any) => {
+                if (typeof r.email !== 'string' || !r.email.includes('@')) return;
+                const [account, domainRaw] = r.email.split('@');
+                const domain = (domainRaw || '').trim().toLowerCase();
+                if (!account || !domain) return;
+                if (domain === 'ikf.co.in') return;
+
+                if (!byDomain.has(domain)) {
+                    byDomain.set(domain, new Set<string>());
+                }
+                byDomain.get(domain)!.add(r.email.trim().toLowerCase());
+            });
+
+            const rows = Array.from(byDomain.entries())
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .map(([domain, emailsSet]) => {
+                    const emails = Array.from(emailsSet).sort().join(', ');
+                    return `${escapeCsv(emails)},${escapeCsv(domain)}`;
+                });
+
+            const csvContent = "data:text/csv;charset=utf-8,"
+                + "Emails,Domain\n"
+                + rows.join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "verified_emails_with_domain.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            return;
+        }
+
         let data = results;
         if (type === 'valid') data = results.filter(r => r.status === 'valid');
         if (type === 'invalid') data = results.filter(r => r.status === 'invalid');
 
-        const csvContent = "data:text/csv;charset=utf-8,"
+        const csvContent = type === 'full'
+            ? "data:text/csv;charset=utf-8,"
+            + "Email,Status,Sub-Status,Free Email,Did You Mean,Account,Domain,Domain Age Days,SMTP Provider,MX Found,MX Record,First Name,Last Name,Score,Reason,Plus Addressed,TLD,MX Count,SMTP Response Code,Risk Flags\n"
+            + data.map((e: any) => [
+                escapeCsv(e.email),
+                escapeCsv(e.status),
+                escapeCsv(e.subStatus || 'none'),
+                escapeCsv(e.freeEmail ? 'Yes' : 'No'),
+                escapeCsv(e.didYouMean || 'Unknown'),
+                escapeCsv(e.account || ''),
+                escapeCsv(e.domain || ''),
+                escapeCsv(e.domainAgeDays ?? ''),
+                escapeCsv(e.smtpProvider || 'unknown'),
+                escapeCsv(e.mxFound ? 'true' : 'false'),
+                escapeCsv(e.mxRecord || ''),
+                escapeCsv(e.firstName || 'Unknown'),
+                escapeCsv(e.lastName || 'Unknown'),
+                escapeCsv(e.score),
+                escapeCsv(e.reason || ''),
+                escapeCsv(e.plusAddressed ? 'true' : 'false'),
+                escapeCsv(e.tld || ''),
+                escapeCsv(e.mxCount ?? 0),
+                escapeCsv(e.smtpResponseCode ?? ''),
+                escapeCsv(Array.isArray(e.riskFlags) ? e.riskFlags.join('|') : '')
+            ].join(",")).join("\n")
+            : "data:text/csv;charset=utf-8,"
             + "Email,Status,Reason\n"
-            + data.map(e => `${e.email},${e.status},${e.reason || ''}`).join("\n");
+            + data.map((e: any) => `${escapeCsv(e.email)},${escapeCsv(e.status)},${escapeCsv(e.reason || '')}`).join("\n");
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);

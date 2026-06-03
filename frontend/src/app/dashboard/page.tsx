@@ -141,6 +141,9 @@ export default function Dashboard() {
                                     <Button size="sm" onClick={() => downloadReport('invalid')} variant="destructive" className="bg-red-500 hover:bg-red-600 cursor-pointer px-4">
                                         Invalid Only
                                     </Button>
+                                    <Button size="sm" onClick={() => downloadReport('verified_domain')} variant="outline" className="cursor-pointer px-4">
+                                        Verified + Domain
+                                    </Button>
                                     <Button size="sm" variant="outline" className="cursor-pointer px-4" onClick={() => downloadReport('full')}>
                                         Full CSV
                                     </Button>

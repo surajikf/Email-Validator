@@ -88,10 +88,66 @@ class QueueWrapper {
             const total = emails.length;
             const results: ValidationResult[] = [];
             const CONCURRENCY = 50;
+            const VALIDATION_TIMEOUT_MS = Number(process.env.VALIDATION_TIMEOUT_MS || 15000);
+
+            const validateWithTimeout = async (email: string): Promise<ValidationResult> => {
+                const timeoutFallback: ValidationResult = {
+                    email,
+                    isValid: false,
+                    status: 'risky',
+                    subStatus: 'validation_timeout',
+                    score: 10,
+                    reason: `Validation timeout after ${VALIDATION_TIMEOUT_MS}ms`,
+                    freeEmail: false,
+                    didYouMean: 'Unknown',
+                    account: email.includes('@') ? email.split('@')[0] : 'Unknown',
+                    domain: email.includes('@') ? email.split('@')[1] : 'Unknown',
+                    domainAgeDays: null,
+                    smtpProvider: 'unknown',
+                    mxFound: false,
+                    mxRecord: null,
+                    firstName: 'Unknown',
+                    lastName: 'Unknown',
+                    plusAddressed: email.includes('+'),
+                    localPartLength: email.includes('@') ? email.split('@')[0].length : 0,
+                    domainLength: email.includes('@') ? email.split('@')[1].length : 0,
+                    tld: email.includes('.') ? `.${email.split('.').pop()}` : '',
+                    hasUnicode: /[^\x00-\x7F]/.test(email),
+                    isCorporateDomain: true,
+                    mxCount: 0,
+                    smtpResponseCode: null,
+                    riskFlags: ['validation_timeout'],
+                    details: {
+                        syntax: false,
+                        mx: false,
+                        smtp: false,
+                        isDisposable: false,
+                        isCatchAll: false,
+                        isRoleBased: false,
+                        isGmail: false,
+                        reputation: 'medium'
+                    }
+                };
+
+                try {
+                    return await Promise.race([
+                        EmailValidatorService.validate(email),
+                        new Promise<ValidationResult>((resolve) => {
+                            setTimeout(() => resolve(timeoutFallback), VALIDATION_TIMEOUT_MS);
+                        })
+                    ]);
+                } catch (error: any) {
+                    return {
+                        ...timeoutFallback,
+                        status: 'unknown',
+                        reason: `Validation error: ${error?.message || 'Unknown error'}`
+                    };
+                }
+            };
 
             for (let i = 0; i < total; i += CONCURRENCY) {
                 const batch = emails.slice(i, i + CONCURRENCY);
-                const batchResults = await Promise.all(batch.map((email: string) => EmailValidatorService.validate(email)));
+                const batchResults = await Promise.all(batch.map((email: string) => validateWithTimeout(email)));
 
                 // Persist to Supabase
                 try {
