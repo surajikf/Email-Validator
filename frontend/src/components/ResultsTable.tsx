@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
 import { cn } from "@/lib/utils";
-import { CheckCircle, XCircle, AlertTriangle, Mail } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 
 interface Result {
     email: string;
     status: 'valid' | 'invalid' | 'risky' | 'unknown';
+    subStatus?: string;
     score: number;
-    reason: string;
+    reason?: string;
     suggestion?: string;
+    freeEmail?: boolean;
+    account?: string;
+    domain?: string;
+    smtpProvider?: string;
+    mxRecord?: string | null;
+    firstName?: string;
+    lastName?: string;
     details: {
         mx: boolean;
         smtp: boolean;
@@ -77,11 +85,16 @@ export function ResultsTable({ results }: ResultsTableProps) {
                     <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm border-b">
                         <tr>
                             <th className="px-6 py-3 font-semibold text-slate-600">Email</th>
+                            <th className="px-6 py-3 font-semibold text-slate-600">Account / Domain</th>
                             <th className="px-6 py-3 font-semibold text-slate-600 text-center">Flags</th>
                             <th className="px-6 py-3 font-semibold text-slate-600">Status</th>
+                            <th className="px-6 py-3 font-semibold text-slate-600">Sub-Status</th>
+                            <th className="px-6 py-3 font-semibold text-slate-600 text-center">Free Email</th>
+                            <th className="px-6 py-3 font-semibold text-slate-600">SMTP Provider</th>
                             <th className="px-6 py-3 font-semibold text-slate-600 text-center">Reputation</th>
                             <th className="px-6 py-3 font-semibold text-slate-600 text-center">DNS</th>
                             <th className="px-6 py-3 font-semibold text-slate-600 text-center">Mailbox</th>
+                            <th className="px-6 py-3 font-semibold text-slate-600">Name</th>
                             <th className="px-6 py-3 font-semibold text-slate-600 text-center">Score</th>
                         </tr>
                     </thead>
@@ -99,6 +112,12 @@ export function ResultsTable({ results }: ResultsTableProps) {
                                     </div>
                                 </td>
                                 <td className="px-6 py-3">
+                                    <div className="flex flex-col text-xs text-slate-600">
+                                        <span className="font-semibold">{row.account || '-'}</span>
+                                        <span>{row.domain || '-'}</span>
+                                    </div>
+                                </td>
+                                <td className="px-6 py-3">
                                     <div className="flex justify-center gap-1.5">
                                         {row.details.isGmail && (
                                             <span className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-100 uppercase" title="Gmail User">G</span>
@@ -111,6 +130,23 @@ export function ResultsTable({ results }: ResultsTableProps) {
                                 <td className="px-6 py-3">
                                     <StatusBadge status={row.status} />
                                 </td>
+                                <td className="px-6 py-3">
+                                    <span className="text-xs text-slate-600 font-medium">{row.subStatus || 'none'}</span>
+                                </td>
+                                <td className="px-6 py-3 text-center">
+                                    <span className={cn(
+                                        "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+                                        row.freeEmail ? "bg-orange-100 text-orange-700" : "bg-emerald-100 text-emerald-700"
+                                    )}>
+                                        {row.freeEmail ? 'Yes' : 'No'}
+                                    </span>
+                                </td>
+                                <td className="px-6 py-3">
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-semibold text-slate-700">{row.smtpProvider || 'unknown'}</span>
+                                        <span className="text-[10px] text-slate-400 truncate max-w-[180px]">{row.mxRecord || '-'}</span>
+                                    </div>
+                                </td>
                                 <td className="px-6 py-3 text-center">
                                     <ReputationBadge reputation={row.details.reputation} />
                                 </td>
@@ -119,6 +155,11 @@ export function ResultsTable({ results }: ResultsTableProps) {
                                 </td>
                                 <td className="px-6 py-3 text-center">
                                     {row.details.smtp ? <CheckCircle className="w-4 h-4 text-green-500 mx-auto" /> : <XCircle className="w-4 h-4 text-red-500 mx-auto" />}
+                                </td>
+                                <td className="px-6 py-3">
+                                    <span className="text-xs text-slate-700">
+                                        {(row.firstName || 'Unknown')} {(row.lastName || 'Unknown')}
+                                    </span>
                                 </td>
                                 <td className="px-6 py-3 text-center">
                                     <ScoreBadge score={row.score} />
