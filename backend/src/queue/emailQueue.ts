@@ -15,7 +15,7 @@ let redisConnection: Redis | null = null;
 const REDIS_HOST = process.env.REDIS_HOST || '127.0.0.1';
 const REDIS_PORT = Number(process.env.REDIS_PORT) || 6379;
 
-console.log(`[Queue] Initializing... trying Redis at ${REDIS_HOST}:${REDIS_PORT}`);
+// Log removed to prevent logging when using memory queue
 
 // We'll create a factory function or just try/catch the connection in a way
 // Since BullMQ requires a connection, we will use a wrapper.
@@ -54,6 +54,17 @@ class QueueWrapper {
     }
 
     async init() {
+        const QUEUE_DRIVER = process.env.QUEUE_DRIVER || 'memory';
+
+        if (QUEUE_DRIVER === 'memory') {
+            console.log("ℹ️ [Queue] QUEUE_DRIVER=memory. Using In-Memory Queue (Redis disabled).");
+            this.isRedis = false;
+            this.queue = new InMemoryQueue('email-validation');
+            this.initWorker(null);
+            return;
+        }
+
+        console.log(`[Queue] Initializing... trying Redis at ${REDIS_HOST}:${REDIS_PORT}`);
         // Attempt to connect to Redis with a short timeout
         const tempRedis = new Redis({
             host: REDIS_HOST,
