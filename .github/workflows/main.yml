@@ -1,0 +1,64 @@
+name: CI/CD - Build and Deploy to Plesk
+
+on:
+  pull_request:
+    branches:
+      - main
+
+  push:
+    branches:
+      - main
+
+jobs:
+  build-check:
+    name: Build Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+  deploy:
+    name: Deploy to Plesk
+    runs-on: ubuntu-latest
+    needs: build-check
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Trigger Plesk deployment
+        run: |
+          curl --fail -X POST "${{ secrets.PLESK_WEBHOOK_URL }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "ref": "refs/heads/main",
+            "repository": {
+              "name": "Email-Validator",
+              "full_name": "surajikf/Email-Validator",
+              "clone_url": "https://github.com/surajikf/Email-Validator.git"
+            },
+            "pusher": {
+              "name": "github-actions"
+            }
+          }'
