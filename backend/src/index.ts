@@ -31,7 +31,7 @@ const uploadLimiter = rateLimit({
 });
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], // Kept original origins
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:8000', 'http://127.0.0.1:8000'],
     credentials: true
 }));
 

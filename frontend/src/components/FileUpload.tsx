@@ -90,12 +90,12 @@ export function FileUpload({ onUploadStart, onError }: FileUploadProps) {
     };
 
     return (
-        <div className="w-full max-w-xl mx-auto space-y-6">
+        <div className="w-full mx-auto space-y-6">
             <div
                 className={cn(
-                    "relative border-2 border-dashed rounded-xl p-8 transition-all text-center cursor-pointer",
-                    dragActive ? "border-primary bg-primary/5 scale-[1.01]" : "border-slate-300 hover:border-primary/50",
-                    files.length > 0 ? "bg-indigo-50/20 border-indigo-200" : "bg-white"
+                    "relative border-2 border-dashed rounded-[2rem] p-10 transition-all duration-300 text-center cursor-pointer",
+                    dragActive ? "border-indigo-500 bg-indigo-50/50 scale-[1.02] shadow-xl shadow-indigo-100" : "border-slate-200 hover:border-indigo-400/50 hover:bg-slate-50/50",
+                    files.length > 0 ? "bg-white border-indigo-100 shadow-sm" : "bg-white/50 backdrop-blur-sm"
                 )}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
@@ -112,12 +112,14 @@ export function FileUpload({ onUploadStart, onError }: FileUploadProps) {
                     onChange={handleChange}
                 />
 
-                <div className="flex flex-col items-center gap-3 text-slate-600">
-                    <UploadCloud className="w-12 h-12 text-primary/70" />
-                    <div>
-                        <span className="font-semibold text-primary">Click to select files</span> or drag and drop
+                <div className="flex flex-col items-center gap-4 text-slate-600">
+                    <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-500 shadow-inner mb-2">
+                        <UploadCloud className="w-8 h-8" />
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-lg">
+                        <span className="font-bold text-indigo-600">Click to select files</span> or drag and drop
+                    </div>
+                    <div className="text-sm font-medium text-slate-400 bg-white/80 px-4 py-1.5 rounded-full shadow-sm border border-slate-100">
                         Select multiple CSV or Excel files
                     </div>
                 </div>
