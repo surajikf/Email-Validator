@@ -51,6 +51,7 @@ jobs:
         run: |
           curl --fail -X POST "${{ secrets.PLESK_WEBHOOK_URL }}" \
           -H "Content-Type: application/json" \
+          -H "X-GitHub-Event: push" \
           -d '{
             "ref": "refs/heads/main",
             "repository": {
